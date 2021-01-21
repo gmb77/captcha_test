@@ -47,15 +47,14 @@ print "Start dependency fetching of captcha generation ..."
 sudo apt install php-gd php -y
 
 print "Start installation configuration ..."
-service apache2 restart
 sudo adduser www-data $user 1>/dev/null
-
 sudo rsync -r --chmod=640 $src/$dir $dest
 sudo chown -R $user:$user $cwd
 sudo chmod 770 $cwd
 chmod ug+x $cwd/*/
 pushd $cwd/solver
 chmod u+x *.sh
+service apache2 restart
 print "Sources copied into folder ${dest}."
 
 print "Start dependency fetching of captcha processing ..."

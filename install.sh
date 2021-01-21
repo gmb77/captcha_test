@@ -54,12 +54,16 @@ sudo rsync -r --chmod=640 $src/$dir $dest
 sudo chown -R $user:$user $cwd
 sudo chmod 770 $cwd
 chmod ug+x $cwd/*/
+pushd $cwd/solver
+chmod u+x *.sh
 print "Sources copied into folder ${dest}."
 
 print "Start dependency fetching of captcha processing ..."
 sudo apt install python3-pip -y
 sudo -H pip3 install launchpadlib six
-pushd $cwd/solver
 pip3 install -r requirements.txt
 
 print "Installation process finished successfully."
+echo "You can start simulation with the below commands:"
+echo "pushd $PWD"
+echo "./run.sh"

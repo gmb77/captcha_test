@@ -64,6 +64,6 @@ sudo -H pip3 install launchpadlib six
 pip3 install -r requirements.txt
 
 print "Installation process finished successfully."
-echo "You can start simulation with the below commands:"
+echo "You can start simulation with next commands:"
 echo "pushd $PWD"
 echo "./run.sh"

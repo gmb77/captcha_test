@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy
 
-captcha_dir = "train_set"
+captcha_dir = "../train_set"
 output_dir = "letters"
 
 counts = {}

@@ -3,7 +3,7 @@ import pickle
 
 import tensorflow.keras as ker
 
-input_dir = "letters"
+input_dir = "train_data/letters"
 model_file = "model.hdf5"
 label_file = "labels.dat"
 

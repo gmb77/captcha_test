@@ -2,9 +2,16 @@ import os
 import cv2
 import numpy
 
-captcha_dir = "../train_set"
-output_dir = "letters"
-ignored_dir = "ignored"
+train_dirs = {
+    "images": "../train_set",
+    "output": "train_data/letters",
+    "ignored": "train_data/ignored"
+}
+validation_dirs = {
+    "images": "../validation_set",
+    "output": "validation_data/letters",
+    "ignored": "validation_data/ignored"
+}
 
 
 def read_image(image_path):
@@ -62,10 +69,11 @@ def find_regions(image):
 
 def crop_letter(image, crop_rectangle):
     x, y, w, h = crop_rectangle
-    return image[y - 2:y + h + 2, x - 2:x + w + 2]
+    padding = 2
+    return image[y - padding:y + h + padding, x - padding:x + w + padding]
 
 
-def extract_letters(image_path, expected_char_num=None):
+def extract_letters(image_path, expected_char_num=None, ignored_dir=None):
     image = read_image(image_path)
     image = preprocess_image(image)
     regions = find_regions(image)
@@ -74,13 +82,14 @@ def extract_letters(image_path, expected_char_num=None):
         expected_char_num = len(os.path.splitext(filename)[0])
     if len(regions) != expected_char_num:
         # print("Extraction of captcha " + filename + " was unsuccessful, it is ignored.")
-        ignored = os.path.abspath(ignored_dir)
-        if not os.path.exists(ignored):
-            os.makedirs(ignored)
-        bad_image = image.copy()
-        for (x, y, w, h) in regions:
-            cv2.rectangle(bad_image, (x, y), (x + w, y + h), 128)
-        save_image(os.path.join(ignored, captcha), bad_image)
+        if ignored_dir is not None:
+            ignored = os.path.abspath(ignored_dir)
+            if not os.path.exists(ignored):
+                os.makedirs(ignored)
+            bad_image = image.copy()
+            for (x, y, w, h) in regions:
+                cv2.rectangle(bad_image, (x, y), (x + w, y + h), 128)
+            save_image(os.path.join(ignored, filename), bad_image)
         return
     cropped_letters = []
     for region in regions:
@@ -88,15 +97,20 @@ def extract_letters(image_path, expected_char_num=None):
     return cropped_letters
 
 
-counts = {}
-for captcha in os.listdir(captcha_dir):
-    captcha_word = os.path.splitext(captcha)[0]
-    letters = extract_letters(os.path.join(os.path.abspath(captcha_dir), captcha))
-    if letters is not None:
-        for char, letter in zip(captcha_word, letters):
-            char_dir = os.path.join(os.path.abspath(output_dir), char)
-            if not os.path.exists(char_dir):
-                os.makedirs(char_dir)
-            count = counts.get(char, 1)
-            save_image(os.path.join(char_dir, str(count).zfill(4) + ".png"), letter)
-            counts[char] = count + 1
+def process_set(dataset):
+    counts = {}
+    for captcha in os.listdir(dataset["images"]):
+        captcha_word = os.path.splitext(captcha)[0]
+        letters = extract_letters(os.path.join(os.path.abspath(dataset["images"]), captcha), ignored_dir=dataset["ignored"])
+        if letters is not None:
+            for char, letter in zip(captcha_word, letters):
+                char_dir = os.path.join(os.path.abspath(dataset["output"]), char)
+                if not os.path.exists(char_dir):
+                    os.makedirs(char_dir)
+                count = counts.get(char, 1)
+                save_image(os.path.join(char_dir, str(count).zfill(4) + ".png"), letter)
+                counts[char] = count + 1
+
+
+process_set(train_dirs)
+process_set(validation_dirs)
